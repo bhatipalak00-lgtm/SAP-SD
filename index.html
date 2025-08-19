@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SAP SD Buddy (Gemini)</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { color: #2c3e50; }
+    input, button { padding: 10px; margin: 5px 0; }
+    button { background: #007aff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #005bb5; }
+    #answer { display: block; margin-top: 15px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>💬 Ask SAP SD Buddy</h1>
+  <input type="text" id="question" placeholder="Ask about SAP SD..." size="50">
+  <button onclick="askBuddy()">Ask</button>
+  <p><strong>Answer:</strong></p>
+  <div id="answer">—</div>
+
+  <script>
+    async function askBuddy() {
+      const q = document.getElementById("question").value.trim();
+      if (!q) {
+        alert("Please type a question first!");
+        return;
+      }
+      document.getElementById("answer").innerText = "⏳ Thinking...";
+
+      try {
+        const res = await fetch("/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: q })
+        });
+
+        if (!res.ok) {
+          throw new Error("Server error " + res.status);
+        }
+
+        const data = await res.json();
+        document.getElementById("answer").innerText = data.answer || "❌ No answer";
+      } catch (err) {
+        console.error("Fetch error:", err);
+        document.getElementById("answer").innerText = "❌ Failed to get response.";
+      }
+    }
+  </script>
+</body>
+</html>
