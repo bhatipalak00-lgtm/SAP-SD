@@ -33,36 +33,40 @@ app.post("/ask", async (req, res) => {
   try {
     const { question } = req.body;
 
-    if (!question) {
-      return res.status(400).json({ error: "No question provided" });
-    }
-
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: "gemini-1.5-flash",
     });
 
     const sapContext = `
-You are SAP SD Buddy, an expert in SAP Sales & Distribution.
-Only answer questions in the context of SAP SD.
-If outside SAP SD, say: I can only help with SAP SD related topics.
+You are SAP SD Buddy, expert in SAP SD.
+Answer only SAP SD questions.
 `;
 
-    const result = await model.generateContent(
-      sapContext + "\n\nUser question: " + question
-    );
+    const result = await model.generateContent({
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: sapContext + "\n" + question }]
+        }
+      ]
+    });
 
     const answer =
-      result?.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No answer generated";
+      result.response.candidates[0].content.parts[0].text;
 
     res.json({ answer });
 
   } catch (error) {
-    console.error("❌ Gemini error:", error);
-    res.status(500).json({
-      error: "Gemini request failed",
-      details: error.message
-    });
+    console.error("Gemini error:", error);
+
+    // Handle quota error
+    if (error.message?.includes("Quota")) {
+      return res.json({
+        answer: "⏳ Too many requests. Please wait a few seconds and try again."
+      });
+    }
+
+    res.status(500).json({ error: "Failed" });
   }
 });
 
