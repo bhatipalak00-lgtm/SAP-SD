@@ -19,33 +19,37 @@
   <p><strong>Answer:</strong></p>
   <div id="answer">—</div>
 
-  <script>
-    async function askBuddy() {
-      const q = document.getElementById("question").value.trim();
-      if (!q) {
-        alert("Please type a question first!");
-        return;
-      }
-      document.getElementById("answer").innerText = "⏳ Thinking...";
+<script>
+async function askBuddy() {
+  const q = document.getElementById("question").value.trim();
+  if (!q) {
+    alert("Please type a question first!");
+    return;
+  }
 
-      try {
-        const res = await fetch("https://sap-sd-buddy.onrender.com/ask", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: q })
-        });
+  document.getElementById("answer").innerText = "⏳ Thinking...";
 
-        if (!res.ok) {
-          throw new Error("Server error " + res.status);
-        }
+  try {
+    const res = await fetch("https://sap-sd-buddy.onrender.com/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: q })
+    });
 
-        const data = await res.json();
-        document.getElementById("answer").innerText = data.answer || "❌ No answer";
-      } catch (err) {
-        console.error("Fetch error:", err);
-        document.getElementById("answer").innerText = "❌ Failed to get response.";
-      }
+    if (!res.ok) {
+      throw new Error("Server error " + res.status);
     }
-  </script>
+
+    const data = await res.json();
+    document.getElementById("answer").innerText =
+      data.answer || "❌ No answer";
+
+  } catch (err) {
+    console.error("Fetch error:", err);
+    document.getElementById("answer").innerText =
+      "❌ Failed to get response.";
+  }
+}
+</script>
 </body>
 </html>
