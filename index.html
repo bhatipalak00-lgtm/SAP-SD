@@ -29,7 +29,7 @@
       document.getElementById("answer").innerText = "⏳ Thinking...";
 
       try {
-        const res = await fetch("/ask", {
+        const res = await fetch("https://sap-sd-buddy.onrender.com/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ question: q })
