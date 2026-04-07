@@ -3,30 +3,15 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const path = require("path");
-const fs = require("fs");
 
 const app = express();
 const PORT = process.env.PORT || 3999;
 
-console.log("API KEY EXISTS:", !!process.env.GEMINI_API_KEY);
-
 app.use(bodyParser.json());
 app.use(cors());
 
-const indexPath = path.join(__dirname, "index.html");
+console.log("API KEY EXISTS:", !!process.env.GEMINI_API_KEY);
 
-// Serve index.html
-app.get("/", (req, res) => {
-  res.sendFile(indexPath);
-});
-
-// Health route
-app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
-});
-
-// Gemini setup
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post("/ask", async (req, res) => {
@@ -34,19 +19,21 @@ app.post("/ask", async (req, res) => {
     const { question } = req.body;
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-1.5-flash-latest"
     });
 
     const sapContext = `
-You are SAP SD Buddy, expert in SAP SD.
-Answer only SAP SD questions.
+You are SAP SD Buddy.
+Answer only SAP SD related questions.
 `;
 
     const result = await model.generateContent({
       contents: [
         {
           role: "user",
-          parts: [{ text: sapContext + "\n" + question }]
+          parts: [
+            { text: sapContext + "\n\n" + question }
+          ]
         }
       ]
     });
@@ -58,18 +45,10 @@ Answer only SAP SD questions.
 
   } catch (error) {
     console.error("Gemini error:", error);
-
-    // Handle quota error
-    if (error.message?.includes("Quota")) {
-      return res.json({
-        answer: "⏳ Too many requests. Please wait a few seconds and try again."
-      });
-    }
-
-    res.status(500).json({ error: "Failed" });
+    res.status(500).json({ error: "Failed to get response" });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
