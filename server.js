@@ -9,6 +9,8 @@ const fs = require("fs");
 const app = express();
 const PORT = process.env.PORT || 3999;
 
+console.log("API KEY EXISTS:", !!process.env.GEMINI_API_KEY);
+
 app.use(bodyParser.json());
 app.use(cors());
 
