@@ -17,22 +17,22 @@ app.post("/ask", async (req, res) => {
     const { question } = req.body;
 
     const prompt = `
-You are SAP SD Buddy, expert in SAP SD.
-Only answer SAP SD related questions.
+You are SAP SD Buddy. Only answer SAP SD questions.
 
 Question: ${question}
 `;
 
-const response = await axios.post(
-`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=${process.env.GEMINI_API_KEY}`,
-{
-  contents: [
-    {
-      parts: [{ text: prompt }]
-    }
-  ]
-}
-);
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: prompt }]
+          }
+        ]
+      }
+    );
 
     const answer =
       response.data.candidates[0].content.parts[0].text;
@@ -43,10 +43,6 @@ const response = await axios.post(
     console.error("Gemini error:", error.response?.data || error.message);
     res.status(500).json({ error: "Failed to get response" });
   }
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
 });
 
 app.listen(PORT, () => {
