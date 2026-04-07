@@ -31,6 +31,10 @@ app.post("/ask", async (req, res) => {
   try {
     const { question } = req.body;
 
+    if (!question) {
+      return res.status(400).json({ error: "No question provided" });
+    }
+
     const model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
     });
@@ -41,18 +45,22 @@ Only answer questions in the context of SAP SD.
 If outside SAP SD, say: I can only help with SAP SD related topics.
 `;
 
-    const result = await model.generateContent([
-      sapContext,
-      question,
-    ]);
+    const result = await model.generateContent(
+      sapContext + "\n\nUser question: " + question
+    );
 
-    const answer = result.response.text();
+    const answer =
+      result?.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "No answer generated";
 
     res.json({ answer });
 
   } catch (error) {
-    console.error("❌ Error:", error);
-    res.status(500).json({ error: "Something went wrong" });
+    console.error("❌ Gemini error:", error);
+    res.status(500).json({
+      error: "Gemini request failed",
+      details: error.message
+    });
   }
 });
 
